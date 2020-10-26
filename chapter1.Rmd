@@ -3,11 +3,30 @@
 
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you should use R Markdown syntax.*
 
+In this *course* I look forward to becoming familiar with **version control techniques** and **project tools** through *GitHub* and *R studio*. 
+
+> Nice additions are also:
+
+* R Markdown and creating nice docs with text, code and output.
+* Practice my quite limited R coding skills. 
+
+
+
+You can access my GitHub repository through this [link](https://github.com/inkera/IODS-project).
+
+
+
 ```{r}
 # This is a so-called "R chunk" where you can write R code.
 
 date()
+library(datasets)
+data(iris)
+
+summary(iris)
+
 
 ```
+
 The text continues here.
 
