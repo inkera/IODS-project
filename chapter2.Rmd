@@ -1,13 +1,172 @@
-# Insert chapter 2 title here
+# ANALYSIS
 
-*Describe the work you have done this week and summarize your learning.*
+# 1 
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+This data set contains information student learning collected by a survey in 2014-2015.
+Information included are respondent gender, age, points along with measures on attitude, deep
+learning and strategy, which are a sample data from a larger data set.
+
+Original data set includes information on 182 students on a course on social statistics
+(Course: Johdatus yhteiskuntatilastotieteeseen, syksy 2014
+("Introduction to Social Statistics, fall 2014 - in Finnish) by a survey with questions 
+on teaching and learning.
+
+More information on the original data set, variables and origin of the data 
+from Kimmo Vehkalahti, and:
+http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS2-meta.txt
+
+
+# 2 Graphical Overview and Summaries of Variables
+
+
 
 ```{r}
 date()
-```
 
-Here we go again...
+install.packages("ggplot2")
+install.packages("GGally")
+library(ggplot2)
+library(GGally)
+
+df <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/learning2014.txt", sep = "\t", header = TRUE)
+
+str(df)
+head(df)
+
+summary(df)
+
+# initialize plot with data and aesthetic mapping
+p1 <- ggplot(df, aes(x = attitude, y = points, col = gender))
+
+# define the visualization type (points)
+p2 <- p1 + geom_point()
+
+# draw the plot
+p2
+
+# add a regression line
+p3 <- p2 + geom_smooth(method = "lm")
+p3
+
+# add a main title and draw the plot
+p41 <- p3 + ggtitle("Student's attitude versus exam points")
+p41
+
+
+# Deep Approach
+p1 <- ggplot(df, aes(x = deep, y = points, col = gender))
+p2 <- p1 + geom_point()
+p2
+
+p3 <- p2 + geom_smooth(method = "lm")
+p3
+
+p42 <- p3 + ggtitle("Deep Approach versus exam points")
+p42
+
+
+# Surface Approach
+p1 <- ggplot(df, aes(x = surf, y = points, col = gender))
+p2 <- p1 + geom_point()
+p2
+
+p3 <- p2 + geom_smooth(method = "lm")
+p3
+
+p43 <- p3 + ggtitle("Surface Approach versus exam points")
+p43
+
+
+
+# Strategic Approach
+p1 <- ggplot(df, aes(x = stra, y = points, col = gender))
+p2 <- p1 + geom_point()
+p2
+
+p3 <- p2 + geom_smooth(method = "lm")
+p3
+
+p44 <- p3 + ggtitle("Strategic Approach versus exam points")
+p44
+
+
+##
+# draw a scatter plot matrix of the variables in learning2014.
+# [-1] excludes the first column (gender)
+pairs(df[-1])
+
+
+# create a more advanced plot matrix with ggpairs()
+p <- ggpairs(df, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
+
+# draw the plot
+p
+
+
+
+```
+The summary shows descriptive information on 165 (?) observations of 7 variables. Variables included are "gender"(chraracter), "attitude"(integer), "age"(int), "deep"(numeric), "stra"(num), "surf"(num), "points"(int). Students in this sample have mean age of 31.4 years with youngest student included 17 and oldest 55 years of age. 
+The mean of overall points is 22.7 with minimum 7 and maximum points of 33.
+
+By looking at the simple figures we can see that student attitude as well as strategic approach seam to be positively
+correlated whereas surface approach is negatively correlated with performance (points). All of the relations are quite 
+moderate with attitude showing strongest connection to performace while the correlations between deep approach and points being close to zero. The relations are quite similar by gender, although the correlation between points and attitude is slightly stronger for men.
+
+By using GGally we can get a more thorough understanding of the descriptives between the variables. Now we see for example that there are near to twice the amount of women compared to men in the sample and that while the distributions of overall points are similar to men and women, they rely on somewhat different learning strategies.
+
+
+
+# 3 Fitting a Regression Model
+
+Three explanatory (x) variables: attitude, gender, age
+
+```{r}
+
+fit1 <- lm(points ~ attitude + gender + age , data = df)
+
+summary(fit1)
+
+# Removing gender and age:
+
+fit2 <- lm(points ~ attitude, data = df)
+
+summary(fit2)
+
+q <- qplot(attitude, points, data = df) + geom_smooth(method = "lm")
+q
+
+```
+Fitting the regression model such that the variation in points (target variable) is explained by the variation in three explanatory variables attitude, gender and age (fit1). Treating age and gender as control variables in this model and the coefficient of attitude as the main parameter of interest, we can interpret the parameter beta_attitude: Keeping age and gender constant, one level increase in attitude (likert scale) is associated with 0.358 increase in points. With standard error 0.05970, this estimate is statistically significant at 1% level, which indicates there is less than 1% probability that the null hypothesis is true and we reject the null of no difference in means. 
+
+The hypothesis test here tests the null hypothesis that the parameter of each explanatory variable is zero. With multiple parameters this is done with the F-test with F-statistic printed with the regression output. The F-statistic: 38.19 on 1 and 163 DF associated with the second model rejects the null of no association.
+
+# 4 Interpreting the results
+After removing the not statistically significant variables age and gender (fit2) - and the explained part of the variation by them - as instructed, the coefficient drops slightly in magnitude to  0.35234 (0.05701) indicating again that one unit increase in attitude level is associated with 0.35 point increase in total points on average. The coefficient is highly statistically significant (1% level).
+
+The multiple R-squared is a measure of amount of variation of the outcome variable that is explained by the explanatory variables in total. The multiple R-squared drops slightly from 0.202 associated with the first model with all three explanatory variables to 0.1898 in the simpler model. The difference is quite small indicating the small amount of variation that gender and age explain on the variation in performance (points).
+
+#5 Diagnostics
+
+Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage
+```{r}
+
+# Diagnostics
+plot(fit2, which = c(1,2,5))
+plot(fit2, which = c(1,2,5), par(mfrow = c(2,2)))
+
+```
+The assumptions of the model and looking at the diagnostics plots:
+
+Error terms are not correlated.
+
+Constant variance assumption ( & Residuals vs Fitted): The size of the errors should not depend on the explanatory variables. Looking at the first figure, there doesnt seam to be any relation as implied by the almost horizontal red line.
+
+Errors are normally distributed ( & QQ-plot) : Error terms are assumed to be normally distributed with mean mu and variance sigma^2. Looking at the QQ-plot, as the residuals seem fairly well fitted on the diagonal, there are not much concern on violation of this assumption. There are some deviations on very small and very large values.
+
+Looking at the last plot ( & Ressiduals vs Leverage), we can check for big outliers in our sample. Cook's distance is a measure of the effect of removing any single point. If there are any highly influential point with high leverage, they show up outside with given intervals -- although here, as we do not have big outliers, not even the intervals are showing.The same plot can be used to check for heteroskedasticity (changing spread indicates heteroskedasticity) and non-linearity.
+
+
+
+
+
+
