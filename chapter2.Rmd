@@ -23,8 +23,8 @@ http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS2-meta.txt
 ```{r}
 date()
 
-install.packages("ggplot2")
-install.packages("GGally")
+#install.packages("ggplot2")
+#install.packages("GGally")
 library(ggplot2)
 library(GGally)
 
@@ -104,6 +104,26 @@ p
 
 
 
+fit1 <- lm(points ~ attitude + gender + age , data = df)
+
+summary(fit1)
+
+# Removing gender and age:
+
+fit2 <- lm(points ~ attitude, data = df)
+
+summary(fit2)
+
+q <- qplot(attitude, points, data = df) + geom_smooth(method = "lm")
+q
+
+# Diagnostics
+#plot(fit2, which = c(1,2,5))
+plot(fit2, which = c(1,2,5), par(mfrow = c(2,2)))
+
+
+
+
 ```
 The summary shows descriptive information on 165 (?) observations of 7 variables. Variables included are "gender"(chraracter), "attitude"(integer), "age"(int), "deep"(numeric), "stra"(num), "surf"(num), "points"(int). Students in this sample have mean age of 31.4 years with youngest student included 17 and oldest 55 years of age. 
 The mean of overall points is 22.7 with minimum 7 and maximum points of 33.
@@ -120,22 +140,6 @@ By using GGally we can get a more thorough understanding of the descriptives bet
 
 Three explanatory (x) variables: attitude, gender, age
 
-```{r}
-
-fit1 <- lm(points ~ attitude + gender + age , data = df)
-
-summary(fit1)
-
-# Removing gender and age:
-
-fit2 <- lm(points ~ attitude, data = df)
-
-summary(fit2)
-
-q <- qplot(attitude, points, data = df) + geom_smooth(method = "lm")
-q
-
-```
 Fitting the regression model such that the variation in points (target variable) is explained by the variation in three explanatory variables attitude, gender and age (fit1). Treating age and gender as control variables in this model and the coefficient of attitude as the main parameter of interest, we can interpret the parameter beta_attitude: Keeping age and gender constant, one level increase in attitude (likert scale) is associated with 0.358 increase in points. With standard error 0.05970, this estimate is statistically significant at 1% level, which indicates there is less than 1% probability that the null hypothesis is true and we reject the null of no difference in means. 
 
 The hypothesis test here tests the null hypothesis that the parameter of each explanatory variable is zero. With multiple parameters this is done with the F-test with F-statistic printed with the regression output. The F-statistic: 38.19 on 1 and 163 DF associated with the second model rejects the null of no association.
@@ -145,16 +149,8 @@ After removing the not statistically significant variables age and gender (fit2)
 
 The multiple R-squared is a measure of amount of variation of the outcome variable that is explained by the explanatory variables in total. The multiple R-squared drops slightly from 0.202 associated with the first model with all three explanatory variables to 0.1898 in the simpler model. The difference is quite small indicating the small amount of variation that gender and age explain on the variation in performance (points).
 
-#5 Diagnostics
+#5 Diagnostics: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage
 
-Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage
-```{r}
-
-# Diagnostics
-plot(fit2, which = c(1,2,5))
-plot(fit2, which = c(1,2,5), par(mfrow = c(2,2)))
-
-```
 The assumptions of the model and looking at the diagnostics plots:
 
 Error terms are not correlated.
