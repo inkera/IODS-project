@@ -59,7 +59,7 @@ p2 <- p1 + geom_point()
 p2
 
 p3 <- p2 + geom_smooth(method = "lm")
-p3
+#p3
 
 p42 <- p3 + ggtitle("Deep Approach versus exam points")
 p42
@@ -68,7 +68,7 @@ p42
 # Surface Approach
 p1 <- ggplot(df, aes(x = surf, y = points, col = gender))
 p2 <- p1 + geom_point()
-p2
+#p2
 
 p3 <- p2 + geom_smooth(method = "lm")
 p3
