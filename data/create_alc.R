@@ -84,7 +84,6 @@ getwd()
 setwd("Z:/FDPE/Courses/Datamooc/IODS-project/data")
 
 write.table(alc, file = "alc.txt", sep = "\t")
-write.csv(alc, file = "alc.csv", sep = "\ ")
 
 
 df <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/alc.txt", sep = "\t", header = TRUE)
