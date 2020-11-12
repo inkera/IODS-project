@@ -1,19 +1,199 @@
-CHAPTER 
+# CHAPTER 3 
 Laura Jernström
 
 ```{r}
-# This is a so-called "R chunk" where you can write R code.
 
 date()
-library(datasets)
-data(iris)
 
-summary(iris)
 
-mean(iris$Sepal.Length)
+alc <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/alc.txt", sep = "\t", header = TRUE)
+
+colnames(alc)
+summary(alc)
+
+
+library(tidyr); library(dplyr); library(ggplot2)
+#install.packages("tidyr")
+
+# glimpse at the alc data
+
+glimpse(alc)
+colnames(alc)
+
+
+# use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
+gather(alc) %>% glimpse
+glimpse(alc)
+# draw a bar plot of each variable
+gather(alc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
+
+
+
+alc %>% group_by(sex) %>% summarise(count = n(), mean_grade = mean(G3))
+alc %>% group_by(sex, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
+
+
+```
+2. 
+
+The data set contains data on student performance in mathematics and Portuguese language in secondary education of two Portuguese schools. There are 382 observations of 35 variables including information on student and school background. There is slightly more variation in male students.
+
+The average age in the data is 17, there are 198 female and 184 male students. The mean grades are almost identical for both genders with 11.46 for female students, 11.45 for male students.
+
+
+3. I will focus on the 4 variables on student health, grade (G3), school support (schoolsup) and travel time (traveltime). My hypothesis are that health, grade and travel time are negatively related to alcohol consumption where as school support is likely to be positively related to alcohol consumption as school support should imply lower socioeconomic status and therefor positive relation to alcohol consumption. I expect the schools to be rather near the city than distant from city and thus further travel time would proxy living outside of city (/rural area).
+
+
+
+
+```{r}
+
+# 4. 
+
+# produce summary statistics by group
+
+# health, G3 (grade), schoolsup, traveltime
+
+# Extra support and alcohol
+alc %>% group_by(schoolsup) %>% summarise(count = n(), mean_alc = mean(alc_use))
+alc %>% group_by(schoolsup) %>% summarise(count = n(), mean_high = mean(high_use))
+
+
+12/(39+12)
+102/(102+229)
+
+
+# Health and alcohol
+g1 <- ggplot(alc, aes(x = high_use, y = health, col = sex))
+# define the plot as a boxplot and draw it
+g1 + geom_boxplot() + ggtitle("Figure 1. Student alcohol consumption by health")
+
+
+# Travel time and alcohol
+g2 <- ggplot(data = alc, aes(x = traveltime, fill = high_use))
+# define the plot as a bar plot and draw it
+g2 + geom_bar() + ggtitle("Figure 2. Student travel time by alcohol consumption (high/low)")
+
+
+# Grade and alcohol
+g3 <- ggplot(data = alc, aes(x = G3, fill = high_use))
+# define the plot as a bar plot and draw it
+g3 + geom_bar() + ggtitle("Figure 3. Student grade by alcohol consumption (high/low)")
+
 
 
 ```
 
-The text continues here.
+Looking first cross tabulations of extra support and alcohol usage, there is a small difference in means with 1.92 for students without extra support and 1.67 for students with extra support. Tabulating the extra support also against mean of students with high/low usage, the students with extra support have slightly lower share (0.24) of high users than students in the no support group (0.31). These statistics go agains my original hypothesis that students with extra support would have higher alcohol consumption. 
+
+The relationship between alcohol usage and health, we see from Figure 1 that the means of student health seam to be fairly similar for high and low users of alcohol among males, but for females the mean of health is lower by 1 level of health for low users of alcohol compared to high users, which is quite surprising. Variation is also higher for high users among females as well, however.
+
+From Figure 2, we see that alcohol consumption (share of high users) seams to increase with travel time. This goes also against my original guess that there would be more consumption with shorter distance (likely living in city) rather than in farther away (liley rural) areas.
+
+Finally, looking at the bar chart of final grade and alcohol usage (high/low), it seams that the share of high users is larger with lower grade levels, with alcohol consumption and grades being inversely associated as expected.
+
+```{r}
+
+# 5.
+
+# Logistics models on high/low alcohol consumption and extra support, health, travel time and grade.
+
+# Higher odds relates to higher probability of success.
+# log(odds)=log(p/1-p). odds is the ratio of success to failures.
+
+# Model: log(p/1-p) = alpha + beta*x + error. Implies Prob(Y_i=1) = p_i
+# 
+
+fit1 <- glm(high_use ~ health + traveltime + schoolsup + G3, data = alc, family = "binomial")
+
+summary(fit1)
+
+OR <- coef(fit1) %>% exp
+
+CI <- confint(fit1) %>% exp
+
+cbind(OR, CI)
+
+#Applying the exponential function to the fitted values gives the odds.
+
+#The exponents of the coefficients can be interpreted as odds ratios between a unit change in x. 
+
+#exp(beta_fitted) = odds(Y|x+1)/odds(Y|x)
+
+
+
+```
+5.
+
+The estimates from the simple logistic regression ("fit1") with all the four variables as explanatory variables and high/low alcohol usage as the target variable can be interpreted with the help of exponential function. 
+
+Looking at the print of odds ratios and the confidence intervals, we see that one unit increase in health is associated with 1.077 odds ratio of high/low alcohol consumption. This implies that one unit increase in health is associated with 1.077 fold increase in the odds of being a high consumer of alcohol.
+
+Similarly, 1 unit increase in travel time is associated with 1.437 odds ratio i.e. one unit increase in travel time is associated with 1.437 fold increase in the odds of being a high consumer of alcohol.
+
+Having extra school support (or not) with 0.646 odds ratio means 0.646 fold increase (i.e decrease) in the odds of being high consumer and a  unit increase in final grade with 0.930 odds ratio is associated with 0.930 fold increase (i.e decrease) in the odds of being a high consumer.
+
+All odds ratios are within confidence intervals.
+
+Based on these results, again, having extra school support seams to be inversely related to alcohol consumption same as final grades. Also in line with previous descriptives, health and travel time seem to be positively associated with high alcohol consumption.
+
+
+```{r}
+# 6.
+
+# fit the model
+fit2 <- glm(high_use ~  traveltime  + G3, data = alc, family = "binomial")
+
+summary(fit2)
+
+
+# predict() the probability of high_use
+probabilities <- predict(fit2, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# see the last ten original classes, predicted probabilities, and class predictions
+select(alc, traveltime, G3, high_use, probability, prediction) %>% tail(10)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table %>% addmargins
+
+
+
+
+```
+```{r}
+
+
+# define a loss function (mean prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = 0)
+
+
+
+
+```
+The loss function gives a value of 0.298 as total proportion of inaccurately(wrong) classified individuals (= the training error). 
+
+The model supports the results gotten from looking at descriptives of the data, wehere as compared to e.g. my simple guessing, it performed better.
+
 
