@@ -56,6 +56,7 @@ glimpse(alc)
 
 
 
+
 # define a new column alc_use by combining weekday and weekend alcohol use
 alc <- mutate(alc, alc_use = (Dalc + Walc) / 2)
 
