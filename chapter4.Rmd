@@ -1,5 +1,5 @@
 ---
-title: "chapter4"
+title: "Chapter 4"
 author: "Laura Jernstöm"
 date: "11/18/2020"
 output: html_document
@@ -7,11 +7,18 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+
 ```
 
-# Chapter 4
 
-```{r message=FALSE}
+
+```{r, message = FALSE}
+
+
+rm(list=ls())
+
+# 1.
 
 library(MASS)
 library(tidyr)
@@ -20,43 +27,65 @@ data(Boston)
 
 str(Boston)
 dim(Boston)
-summary(Boston)
+
 
 
 ```
-The Boston data set contains information on housing Values in suburbs of Boston and includes 506 observations of 14 variables. 
-There are information including crime rate, proportion on residential land zoned for lots, nitrogen oxiden concentration, age and size of living units, residential taxes and pupil-teacher ratio.
+The Boston data set contains information on housing Values in suburbs of Boston and includes 506 observations of 14 variables. There are information including crime rate, proportion on residential land zoned for lots, nitrogen oxiden concentration, age and size of living units, residential taxes and pupil-teacher ratio.
 
-```{r message=FALSE}
+```{r, message = FALSE}
+
 
 #install.packages("corrplot")
 library(corrplot)
+library(GGally)
 
-pairs(Boston)
+# Summaries of the variables
+summary(Boston)
+
+p1 <- pairs(Boston, main = "Figure 1")
 
 cor_matrix<-cor(Boston) 
+
+# create a more advanced plot matrix with ggpairs()
+p2a <- ggpairs(Boston[1:7], lower = list(combo = wrap("facethist", bins = 20)), title = "Figure 2a")
+
+# create a more advanced plot matrix with ggpairs()
+p2b <- ggpairs(Boston[8:14], lower = list(combo = wrap("facethist", bins = 20)), title = "Figure 2b")
+
+
+# draw the plots
+p1
+p2a
+p2b
 
 # print the correlation matrix
 cor_matrix %>% round(digits=2)
 
 # visualize the correlation matrix
-corrplot(cor_matrix, method="circle", type = "upper", cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
-
+p3 <- corrplot(cor_matrix, method="circle", type = "upper", cl.pos = "b", tl.pos = "d", tl.cex = 0.6, main = "Figure 3")
+p3
 
 
 ```
 
-Describe...
+Looking at Figure 1 and 2, we can see that the distributions of the variables are quite skewed in most cases with the expection of the variable rm, which has a distribution closer to the normal distribution. The variables indust, tax, rad ( and ptratio?) also have multiple peeks in their distriputions.
+
+From Figure 3 we can see correlations between variables. Variable pairs rad and tax, rm and medv, indus and tax, indus and nox, nox and age are strongly positive correlated with correlation coefficients close to 1. Variable pairs indus and dis, indus and nox, indus and age, lstat and medv are strongly negatively correlated with coefficients close to -1. Other variable pairs less strongly correlated with the variable chas being the most linearly independent variable.
 
 
-```{r message = TRUE}
+```{r, message = FALSE}
+
 
 # 4.
+
+# Scale by substracting the mean and dividing with the standard deviation.
 
 boston_scaled <- scale(Boston)
 
 # summaries of the scaled variables
 summary(boston_scaled)
+
 
 # class of the boston_scaled object
 class(boston_scaled)
@@ -65,11 +94,15 @@ class(boston_scaled)
 boston_scaled <- as.data.frame(boston_scaled)
 
 
+
+
 ```
 
-The change to previous can be seen from looking at the summary statistics of the variables: The means are now standardised to to zero.
+The change to previous can be seen from the summary statistics: The means are now standardized to zero.
 
-```{r}
+
+```{r, results = 'hide', message = FALSE}
+
 
 # 4. continues
 
@@ -121,10 +154,9 @@ test <- dplyr::select(test, -crime)
 
 ```
 
-Comments....
 
 
-```{r message = FALSE}
+```{r, results = 'hide', message = FALSE}
 
 # 5. 
 
@@ -149,15 +181,17 @@ lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "orange", tex 
 # target classes as numeric
 classes <- as.numeric(train$crime)
 
-# plot the lda results
-plot(lda.fit, dimen = 2, col = classes, pch = classes)
+# plot the lda results  (LDA (bi)plot)
+plot(lda.fit, dimen = 2, col = classes, pch = classes, main = "Figure 4")
 lda.arrows(lda.fit, myscale = 1)
 
 
 ```
 
 
-```{r message = FALSE}
+
+
+```{r, message = FALSE}
 
 # 6. 
 
@@ -171,10 +205,11 @@ table(correct = correct_classes, predicted = lda.pred$class)
 
 ```
 
-Comment....
+
+Looking at the cross tabulation of correct and predicted classes, the test set seams to perform relatively well, with mostly quite small deviations from the correct values, with the pair med_low/med_high somewhat of an exception.
 
 
-```{r message = FALSE}
+```{r, results = 'hide', message = FALSE}
 
 # 7. Distance measures (K-mass, euclidian, manhattan)
 
@@ -210,17 +245,19 @@ boston_scaled <- as.data.frame(boston_scaled)
 km <- kmeans(boston_scaled, centers = 3)
 
 # plot the Boston dataset with clusters
-p <- pairs(boston_scaled[6:10], col = km$cluster)
-p
+p51 <- pairs(boston_scaled[1:5], col = km$cluster, main = "Figure 5a")
+p52 <- pairs(boston_scaled[6:10], col = km$cluster, main = "Figure 5b")
+
+
+p51
+p52
 
 
 ```
 
-Comment...
 
 
-
-```{r message = FALSE}
+```{r, results = 'hide', message = FALSE}
 
 # 7. Continues
 
@@ -234,20 +271,28 @@ k_max <- 10
 twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled, k)$tot.withinss})
 
 # visualize the results
-qplot(x = 1:k_max, y = twcss, geom = 'line')
+p6 <- qplot(x = 1:k_max, y = twcss, geom = 'line', main = "Figure 6")
+p6
+
 
 # k-means clustering
-km <-kmeans(boston_scaled, centers = 2)
+km <-kmeans(boston_scaled, centers = 3)
 
 # plot the Boston dataset with clusters
-pairs(boston_scaled, col = km$cluster)
+p71 <- pairs(boston_scaled[1:5], col = km$cluster, main = "Figure 7a")
+p72 <- pairs(boston_scaled[6:10], col = km$cluster, main = "Figure 7b")
 
+p71
+p72
 
 
 
 ```
 
-Interpret...
+Looking at Figure 5, it would appear that for most variables, the optimal number of clusters could be at k=2 or k=3. 
+
+Looking at Figure 6, 7a and 7b, there can be seen elbows (kinks) at k= 2, k=3 and k=5, which could be optimal numbers of clusters.
 
 
+***
 
