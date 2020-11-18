@@ -4,10 +4,14 @@
 
 library(dplyr)
 
+# 1. and 2.
+
 # read the human data
 hd <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human_development.csv", stringsAsFactors = F)
 # read gender inequality
 gii <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/gender_inequality.csv", stringsAsFactors = F, na.strings = "..")
+
+# 3.
 
 # look at the (column) names
 names(hd)
