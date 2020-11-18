@@ -5,6 +5,8 @@ date: "11/18/2020"
 output: html_document
 ---
 
+# Chapter 4
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -294,5 +296,5 @@ Looking at Figure 5, it would appear that for most variables, the optimal number
 Looking at Figure 6, 7a and 7b, there can be seen elbows (kinks) at k= 2, k=3 and k=5, which could be optimal numbers of clusters.
 
 
-***
+
 

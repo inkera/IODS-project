@@ -19,11 +19,6 @@ You can access my GitHub repository through this [link](https://github.com/inker
 # This is a so-called "R chunk" where you can write R code.
 
 date()
-library(datasets)
-data(iris)
-
-summary(iris)
-
 
 ```
 
