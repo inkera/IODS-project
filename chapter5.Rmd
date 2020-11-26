@@ -142,7 +142,9 @@ plot(mca, invisible=c("ind"), habillage = "quali", main = "Figure 4")
 
 ```
 
-
+MCA is a dimensionality reduction method. The distance of the variables indicates their similarity. Looking at the MCA factor map (MCA biplot), we see that "unpackaged"
+and "tea shop" are further on the right/positive end along Dimension 1, while the other factors 
+are closer along the zero line of Dim 1. This indicates that on one hand that the unpackaged and tea shop are close to each other, which seams intuitive, and on the other hand that they are further in similarity to the other variables in the sample.
 
 
 
