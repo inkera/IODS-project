@@ -1,70 +1,93 @@
+rm(list=ls())
+
 # Laura Jernström
+# 26/11/2020
+# The 'human' dataset originates from the United Nations Development Programme. 
+# See their data page at
+# http://hdr.undp.org/en/content/human-development-index-hdi 
+# for more information. 
+# Technical note on the human development indeces at:
+# http://hdr.undp.org/sites/default/files/hdr2015_technical_notes.pdf
 
-# Creating the data set "human" by combining data sets on human development and gender inequality.
-
-library(dplyr)
-
-# 1. and 2.
-
-# read the human data
-hd <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human_development.csv", stringsAsFactors = F)
-# read gender inequality
-gii <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/gender_inequality.csv", stringsAsFactors = F, na.strings = "..")
-
-# 3.
-
-# look at the (column) names
-names(hd)
-names(gii)
-
-# look at the structures
-str(hd)
-str(gii)
-
-# dimensions
-dim(hd)
-dim(gii)
-
-# print out summaries of the variables
-summary(hd)
-summary(gii)
+# dplyr::select()
 
 
-# 4. rename variables in hd
-
-colnames(hd) = c("HDI.Rank", "Country", "HDI", "Life.Exp", "Edu.Exp", "Edu.Mean", "GNI", "GNI.Minus.Rank")    
-names(hd)
-
-names(gii)
-colnames(gii) = c("GII.Rank", "Country", "GII", "Mat.Mor", "Ado.Birth", "Parli.F", "Edu2.F", "Edu2.M", "LabF", "LabM")
-names(gii)
 
 
-# 5. Mutate and create two new variables:
 
-# ratio of Female and Male populations with secondary education
-#in each country. (i.e. edu2F / edu2M)
-gii <- mutate(gii, edu2.FM = (Edu2.F / Edu2.M))
+human <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/human.txt", 
+                     sep = "\t", header = TRUE)
 
-# ratio of labour force participation of females and males in 
-# each country (i.e. labF / labM)
-gii <- mutate(gii, labo.FM = (LabF / LabM))
-
-names(gii)
-
-
-# 6. Join human and gii as "human" by the variable Country
-
-human <- inner_join(hd, gii, by = "Country") 
-
-names(human)
-
+str(human)
 dim(human)  # 195 obs. of 19 variables
+names(human)
+summary(human)
+
+# The data set contains information by country on human development measures
+# on 195 observations of 19 variables.
+
+# Variables include HDI, life expectancy, education, GNI, GII, maternal 
+# mortality, adolescent birth, parliamentary and labour market attachment.
+
+# 1.
+
+library(stringr)
+library(dplyr)
+# look at the structure of the GNI column in 'human'
+str(human$GNI)
+
+# remove the commas from GNI and print out a numeric version of it
+str_replace(human$GNI, pattern=",", replace ="") %>% as.numeric()
+
+
+# 2. 
+
+keep <- c("Country", "edu2.FM", "labo.FM", "Life.Exp", "Edu.Exp", "GNI", "Mat.Mor", "Ado.Birth", "Parli.F")
+
+# select the 'keep' columns
+human <- select(human, one_of(keep))
+
+
+# 3. 
+
+# print out a completeness indicator of the 'human' data
+complete.cases(human)
+
+# print out the data along with a completeness indicator as the last column
+data.frame(human[-1], comp = complete.cases(human))
+
+# filter out all rows with NA values
+human_ <- filter(human, complete.cases(human))
+
+
+
+# 4. Remove regions
+
+# look at the last 10 observations
+tail(human, 10)
+
+# last indice we want to keep
+last <- nrow(human) - 7
+
+# choose everything until the last 7 observations
+human_ <- human[1:last, ]
+
+# 5.
+
+# add countries as rownames
+rownames(human) <- human$Country
+
+# remove the Country variable
+human_ <- dplyr::select(human, -Country)
+
+
 
 getwd()
 setwd("Z:/FDPE/Courses/Datamooc/IODS-project/data")
 
-write.table(human, file = "human.txt", sep = "\t")
+write.table(human_, file = "human.txt", sep = "\t")
 
 
 
+human <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/human.txt", 
+                     sep = "\t", header = TRUE)
