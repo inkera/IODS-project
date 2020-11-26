@@ -85,9 +85,9 @@ human_ <- dplyr::select(human, -Country)
 getwd()
 setwd("Z:/FDPE/Courses/Datamooc/IODS-project/data")
 
-write.table(human_, file = "human.txt", sep = "\t")
+write.table(human_, file = "human_.txt", sep = "\t")
 
 
 
-human <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/human.txt", 
+human_ <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/human_.txt", 
                      sep = "\t", header = TRUE)

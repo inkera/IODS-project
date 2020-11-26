@@ -1,0 +1,151 @@
+---
+title: "chapter5"
+author: "Laura Jernstöm"
+date: "11/26/2020"
+output: html_document
+---
+
+# Chapter 5
+
+
+```{r, message = FALSE}
+rm(list = ls())
+
+
+human_ <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human2.txt",  sep = ",", header = TRUE)
+
+# ?
+#human_ <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/human_.txt", 
+ #                    sep = "\t", header = TRUE)
+
+# 1. Graphical overview and summaries of variables.
+
+summary(human_)
+
+# Access
+library(GGally)
+library(corrplot)
+library(tidyr)
+library(dplyr)
+
+# visualize the 'human_' variables
+
+ggpairs(human_)
+# compute the correlation matrix and visualize it with corrplot
+cor(human_) %>% corrplot + title(" Figure 2")
+
+
+```
+
+Looking at the distributions of the variables, we see that most tend to have quite skewed distributions with long left or right tails. The expected education (Edu.Exp) is an exception with a distribution resembling that of a normal distribution bit more closely. Looking at the correlations coefficients, we see that maternal mortality as well as adolescent births are highly negatively correlated with expected education levels and life expectancy along with somewhat less strongly but negatively correlated with the gross national income (GNI). Conversly, as expected, education, life expectancy and GNI are positively correlated.
+
+```{r, message = FALSE}
+
+# 2. Principal component analysis (PCA) on the NOT standardized human data.
+
+
+# perform principal component analysis (with the SVD method)
+pca_human_not <- prcomp(human_)
+
+summary(pca_human_not)
+
+# biplot
+biplot(pca_human_not, choices = 1:2, main = "Figure 3")
+
+```
+
+Looking at Figure 3, see see that without standardisation, the PCA analysis is not very informative.
+
+
+
+```{r}
+
+# 3. Principal component analysis (PCA) on the standardized human data.
+
+# standardize the variables
+human_std <- scale(human_)
+
+# print out summaries of the standardized variables
+summary(human_std)
+
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human_std)
+
+# draw a biplot of the principal component representation and the original variables
+#biplot(pca_human, choices = 1:2, main = "Figure 3")
+
+
+# create and print out a summary of pca_human
+s <- summary(pca_human)
+s
+
+# rounded percentages of variance captured by each PC
+pca_pr <- round(100*s$importance[2,], digits = 1) 
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# draw a biplot
+biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2],  main = "Figure 4")
+
+
+
+```
+
+In Figure 4 showing the biplot from the PCA, the angles between the arrows represent the original features. Can be interpreted as the correlations between the features (small angle equals high positive correlation / large angle equals high negative correlation). Arrows that are orthogonal, represent variables that have zero correlation. The angle between the PC-components (y and x axis) and arrows represent correlations between them. Arrows pointing to the direction of a PC, represent components contributing to that feature. The length of the arrows are proportional to standard deviations of those variables. 
+
+(QUESTION 3:) From Figure 4, we see that the combined labour market attachment for men and women (Labo.FM) as well as the parliament attachment (Parli.F) point to the direction of the second principal component, PC2 with 16% contribution of total variation, while the factors contribute to the first principal component, PC1 with 54% contribution.
+
+(QUESTION 4:) In my interpretation the PC analysis performs well. In Figure 2, the correlation coefficients between labour market and parliament attachments (the two factors contributing to PC2) are close to zero, where as the other factors have stronger positive or negative correlations coefficients. In Figure 4, the factors contributing to PC1 are divided in two groups with arrows parallel (represent strong correlations) to PC1 axis and pointing to opposite directions in line with Figure 2.
+
+
+```{r, message = FALSE}
+
+# 5.
+
+rm(list=ls())
+
+#install.packages("FactoMineR")
+library(FactoMineR)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data(tea)
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- dplyr::select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+summary(tea_time)
+str(tea_time)
+
+# visualize the dataset
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali", main = "Figure 4")
+
+
+
+```
+
+
+
+
+
+
+
+
