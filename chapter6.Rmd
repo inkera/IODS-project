@@ -1,0 +1,227 @@
+---
+title: "chapter6"
+author: "Laura Jernstöm"
+date: "12/2/2020"
+output: html_document
+---
+
+
+# CHAPTER 6 
+
+
+## Part 1.
+
+Analysis of Chpater 8 of Kimmos' book with rats data
+
+Description of data:
+
+"Data from a nutrition study conducted in three groups of rats
+(Crowder and Hand, 1990). The three groups were put on different diets, and
+each animal’s body weight (grams) was recorded repeatedly (approximately
+weekly, except in week seven when two recordings were taken) over a 9-week
+period." (Vehkalahti and Everitt, ?)
+
+
+Implement the analyses of Chapter 8 of MABS using the RATS data. (0-7 points: 0-4 points for graphs or analysis results + 0-3 points for their interpretations)
+
+
+
+```{r}
+
+rm(list=ls())
+
+date()
+
+
+
+# Data
+rats <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt",
+                   sep ="", header = TRUE)
+ratsl <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/ratsl.txt", sep = " ", header = TRUE)
+
+names(ratsl)
+
+
+#Access the package ggplot2
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+ratsl$ID <- as.factor(ratsl$ID)
+ratsl$Group <- as.factor(ratsl$Group)
+
+# Draw the plot
+ggplot(ratsl, aes(x = Time, y = rats, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(ratsl$rats), max(ratsl$rats))) + ggtitle("Figure 1")
+
+
+
+
+```
+
+Figure 1 plots the individual response profiles of by treatment group for the rats data. First thing
+to notice are the clear level differences between the groups: group 2 is slightly below in level terms
+to group 3 at all values of Time-variable, where as group 1 is significantly below groups 2 and 3 with
+a difference 300 points from the max values of group 1 vs minimum of group 2. 
+
+All groups seam to have relatively similar slopes among individuals, with perhaps a small exception in Group 2,
+which speaks of tracking phenomenon i.e. individuals having high scores in the beginning tend to have them
+in the end as well.
+
+Variability in the groups looks quite small with all groups having one possible outlier with Group 2 having one
+large outlier. Slopes are also increasing i.e. rats scores increase over time.
+
+
+```{r}
+
+# Standardise the variable rats
+ratsl <- ratsl %>%
+  group_by(Time) %>%
+  mutate(stdrats = (rats - mean(rats))/sd(rats) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(ratsl)
+
+# Plot again with the standardised bprs
+ggplot(ratsl, aes(x = Time, y = stdrats, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  scale_y_continuous(name = "standardized rats") + ggtitle("Figure 2")
+
+
+```
+
+After having standardized the variable rats, the figures look quite different. Comparing Figure 1 and Figure 2,
+first thing to notice is the change in the slopes to the opposite, which seams a bit strange. It still looks
+like all groups have possible outlier with Group 2 having a clear outlier.
+
+
+
+```{r}
+
+# Number of time periods, baseline (time 0) included
+n <- ratsl$Time %>% unique() %>% length()
+
+
+# Summary data with mean and standard error of rats by Group and Time 
+ratsls <- ratsl %>%
+  group_by(Group, Time) %>%
+  summarise( mean = mean(rats), se = sd(rats)/sqrt(n) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(ratsls)
+
+# Plot the mean profiles
+ggplot(ratsls, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2,3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2,3)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.9,0.5)) +
+  scale_y_continuous(name = "mean(rats) +/- se(rats)") + ggtitle("Figure 3")
+
+
+```
+
+Figure 3 plots the mean weights of the rats against time by group along with their confidence intervals.
+There is no overlapping i.e all groups are significantly different to each other.
+
+
+
+
+
+
+```{r}
+
+# Create a summary data by treatment and subject with mean as the summary variable (ignoring baseline week 0).
+rats8l <- ratsl %>%
+  filter(Time > 0) %>%
+  group_by(Group, ID) %>%
+  summarise( mean=mean(rats) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(rats8l)
+
+# Draw a boxplot of the mean versus treatment
+ggplot(rats8l, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(rats), Time") + ggtitle("Figure 4")
+
+# Create a new data by filtering the outlier and adjust the ggplot code the draw the plot again with the new data
+rats8l1 <- rats8l %>%
+  filter(mean < 60)
+
+
+
+
+```
+
+Figure 4 shows a clear difference in means between the three groups i.e. the development of the
+weights of the rats are significantly different for the different diets. Figure 4 also supports the notion of one outlier for each group, with the outlier in Group 2 the most clear.
+
+
+```{r}
+
+# Perform a three-sample f-test?
+# t.test(mean ~ Group, data = rats8l1, var.equal = TRUE)
+
+# Add the baseline from the original data as a new variable to the summary data
+rats8l2 <- rats8l %>%
+  mutate(baseline = rats$WD1)
+
+# Fit the linear model with the mean as the response 
+fit <- lm(mean ~ baseline + Group, data = rats8l2)
+
+
+# Compute the analysis of variance table for the fitted model with anova()
+anova(fit)
+
+
+?f.test
+
+```
+
+Looking at the table showing the results from the analysis of variance, we see that the both the baseline
+and group have significant estimates indicating clear differences from the null of zero difference in means.
+
+
+
+
+## Part 2.
+
+
+rm(list=ls())
+
+date()
+
+
+
+# Data
+rats <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt",
+                   sep ="", header = TRUE)
+ratsl <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/ratsl.txt", sep = " ", header = TRUE)
+
+names(ratsl)
+
+
+#Access the package ggplot2
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+ratsl$ID <- as.factor(ratsl$ID)
+ratsl$Group <- as.factor(ratsl$Group)
+
+
+
+
