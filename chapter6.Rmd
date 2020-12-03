@@ -312,7 +312,7 @@ summary(bprs_ref2)
 anova(bprs_ref2, bprs_ref1)
 
 
-# draw the plot of RATSL
+# draw the plot of BPRSL
 ggplot(BPRSL, aes(x = weeks, y = bprs, group = subject)) +
   geom_point(aes(linetype = treatment, shape = treatment, color = treatment)) +
   scale_x_discrete(name = "Weeks", breaks = seq(0, 60, 20)) +
@@ -322,11 +322,11 @@ ggplot(BPRSL, aes(x = weeks, y = bprs, group = subject)) +
 # Create a vector of the fitted values
 Fitted <- fitted(bprs_ref2)
 
-# Create a new column fitted to RATSL
+# Create a new column fitted to BPRSL
 BPRSL <- BPRSL %>%
   mutate(Fitted)
 
-# draw the plot of RATSL
+# draw the plot of BPRSL
 ggplot(BPRSL, aes(x = weeks, y = Fitted, group = subject)) +
   geom_point(aes(linetype = treatment, shape = treatment, color = treatment)) +
   scale_x_discrete(name = "Weeks", breaks = seq(0, 60, 20)) +
