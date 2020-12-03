@@ -199,19 +199,33 @@ and group have significant estimates indicating clear differences from the null 
 
 ## Part 2.
 
+On the BPRS data based on Kimmo's book:
+
+Here 40 male subjects were
+randomly assigned to one of two treatment groups and each subject was rated
+on the brief psychiatric rating scale (BPRS) measured before treatment began
+(week 0) and then at weekly intervals for eight weeks. The BPRS assesses
+the level of 18 symptom constructs such as hostility, suspiciousness, hallucinations
+and grandiosity; each of these is rated from one (not present) to seven
+(extremely severe). The scale is used to evaluate patients suspected of having
+schizophrenia.
+
+
+
+
+````{r}
 
 rm(list=ls())
 
-date()
-
-
-
 # Data
-rats <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt",
-                   sep ="", header = TRUE)
-ratsl <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/ratsl.txt", sep = " ", header = TRUE)
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", 
+                   sep ="" , header = TRUE)
 
-names(ratsl)
+BPRSL <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/BPRSL.txt", sep = " ", header = TRUE)
+
+
+
+names(BPRSL)
 
 
 #Access the package ggplot2
@@ -219,8 +233,118 @@ library(ggplot2)
 library(tidyr)
 library(dplyr)
 
-ratsl$ID <- as.factor(ratsl$ID)
-ratsl$Group <- as.factor(ratsl$Group)
+BPRSL$subject <- as.factor(BPRSL$subject)
+BPRSL$treatment <- as.factor(BPRSL$treatment)
+
+
+dim(BPRSL)
+
+# Plot the BPRSL data
+ggplot(BPRSL, aes(x = week, y = bprs, group = subject)) +
+  geom_point(aes(linetype = treatment, shape = treatment, color = treatment)) +
+  scale_x_continuous(name = "Weeks", breaks = seq(0, 60, 10)) +
+  scale_y_continuous(name = "BPRS") +
+  theme(legend.position = "top") +
+  ggtitle("Figure 5")
+
+
+
+
+
+```
+
+Figure 5 plots the bprs-scores for the two treatment groups. It appears that for both groups, the
+scores decrease over the weeks. Looking at the lowest and highest scores for each week, it 
+appears that variance is higher for group 2, although it is difficult so see any clear indication
+of which treatment performs better on average.
+
+
+```{r}
+
+
+# create a regression model bprs_reg
+fit <- lm(bprs ~ weeks + treatment, data = BPRSL)
+
+# print out a summary of the model
+summary(fit)
+
+# access library lme4
+library(lme4)
+
+# Create a random intercept model
+bprs_ref <- lmer(bprs ~ weeks + treatment + (1 | subject), data = BPRSL, REML = FALSE)
+
+# Print the summary of the model
+summary(bprs_ref)
+
+
+```
+
+Models
+
+
+
+```{r}
+
+# create a random intercept and random slope model
+bprs_ref1 <- lmer(bprs ~ weeks + treatment+ (weeks | subject), data = BPRSL, REML = FALSE)
+
+# print a summary of the model
+summary(bprs_ref1)
+
+# perform an ANOVA test on the two models
+anova(bprs_ref1, bprs_ref)
+
+
+```
+
+comment...
+
+```{r}
+
+# create a random intercept and random slope model
+bprs_ref2 <- lmer(bprs ~ weeks * treatment + (weeks | subject), data = BPRSL, REML = FALSE)
+
+# print a summary of the model
+summary(bprs_ref2)
+
+# perform an ANOVA test on the two models
+anova(bprs_ref2, bprs_ref1)
+
+
+# draw the plot of RATSL
+ggplot(BPRSL, aes(x = weeks, y = bprs, group = subject)) +
+  geom_point(aes(linetype = treatment, shape = treatment, color = treatment)) +
+  scale_x_discrete(name = "Weeks", breaks = seq(0, 60, 20)) +
+  scale_y_continuous(name = "BPRS") +
+  theme(legend.position = "top")
+
+# Create a vector of the fitted values
+Fitted <- fitted(bprs_ref2)
+
+# Create a new column fitted to RATSL
+BPRSL <- BPRSL %>%
+  mutate(Fitted)
+
+# draw the plot of RATSL
+ggplot(BPRSL, aes(x = weeks, y = Fitted, group = subject)) +
+  geom_point(aes(linetype = treatment, shape = treatment, color = treatment)) +
+  scale_x_discrete(name = "Weeks", breaks = seq(0, 60, 20)) +
+  scale_y_continuous(name = "Fitted bprs") +
+  theme(legend.position = "top")
+
+
+
+```
+
+
+
+
+
+
+
+
+
 
 
 

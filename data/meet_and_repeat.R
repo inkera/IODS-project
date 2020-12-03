@@ -85,7 +85,4 @@ setwd("Z:/FDPE/Courses/Datamooc/IODS-project/data")
 write.table(BPRSL, file = "BPRSL.txt", sep = " ")
 write.table(ratsl, file = "ratsl.txt", sep = " ")
 
-df1 <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/BPRSL.txt", sep = " ", header = TRUE)
-df2 <- read.table( "Z:/FDPE/Courses/Datamooc/IODS-project/data/ratsl.txt", sep = " ", header = TRUE)
-
 
